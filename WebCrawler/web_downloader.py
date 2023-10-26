@@ -24,4 +24,5 @@ def GetHtml(url):
             print(e.code)
         if hasattr(e, "reason"):
             print(e.reason)
+        return None
     return html

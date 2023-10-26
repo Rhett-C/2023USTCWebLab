@@ -37,7 +37,7 @@ findMovieJudgeAmt = re.compile(r'<span property="v:votes">(\d*)</span>人评价'
 def AnalysisData_movie(url):
     '''
     定义一个函数, 并解析这个网页
-    目前可以记录以下信息: [[电影名称, 图片链接], 简介, [导演, 演职员表], [评分, 评价人数]]
+    目前可以记录以下信息: [ [[电影名称], [图片链接]], [简介], [导演], [演职员表], [评分, 评价人数] ]
     '''
 
     # 定义一个列表以储存每一部电影的信息
@@ -46,6 +46,8 @@ def AnalysisData_movie(url):
 
     # 获取指定网页
     html = web_downloader.GetHtml(url)
+    if html == None:    # 如果获取失败, 返回None
+        return None
 
     # 指定解析器解析html, 得到BeautifulSoup对象
     soup = BeautifulSoup(html, "html5lib")
@@ -63,14 +65,18 @@ def AnalysisData_movie(url):
         # 添加标题
         # 例如: 肖申克的救赎 The Shawshank Redemption
         # 电影同时具有中文名称和外文名称时如何处理?
-        title = re.findall(findMovieTitle, item)[0]
-        data.append(title)
-        # databin.append(title)
+        title = re.findall(findMovieTitle, item)
+        if title == []:
+            title = ["no film title found"]
+        else:
+            data.append(title)
 
         # 添加图片链接
-        img = re.findall(findMovieImgSrc, item)[0]
-        data.append(img)
-        # databin.append(img)
+        img = re.findall(findMovieImgSrc, item)
+        if img == []:
+            img = ["no film image found"]
+        else:
+            data.append(img)
 
     dataList.append(data) # 将电影的信息添加到dataList中
 
@@ -98,14 +104,13 @@ def AnalysisData_movie(url):
 
         # 电影可能没有简介
         if inq == []:
-            inq = "no film introduction found"
+            inq = ["no film introduction found"]
         else:
             # 整理简介的字符串, 取出其中的不必要符号
             # 只收集第一个简介
             inq = re.sub(r' |\n', '', inq[0][0])
             inq = inq.replace(u'\u3000', '').replace(u'<br/>', '')
         data.append(inq)
-        # databin.append(inq)
 
     dataList.append(data) # 将电影的信息添加到dataList中
 
@@ -115,17 +120,24 @@ def AnalysisData_movie(url):
         item = str(item)
 
         # 添加导演信息
-        director = re.findall(findDirector, item)[0]
-        data.append("Director:" + director)
-        # databin.append(director)
+        director = re.findall(findDirector, item)
+        if director == []:
+            director = ["no director found"]
+        else:
+            data.append(director[0])
+
+    dataList.append(data)
     
+    data = []
     for item in soup.find_all('meta', property="video:actor"):
         item = str(item)
 
         # 添加演职员表
-        actor = re.findall(findActor, item)[0]
-        data.append(actor)
-        # databin.append(actor)
+        actor = re.findall(findActor, item)
+        if actor == []:
+            actor = ["no actor found"]
+        else:    
+            data.append(actor[0])
 
     dataList.append(data)
 
@@ -136,13 +148,17 @@ def AnalysisData_movie(url):
 
         # 添加评分
         rate = re.findall(findMovieRate, item)[0]
-        data.append(rate)
-        # databin.append(rate)
+        if rate == "":
+            rate = "no rate found"
+        else:
+            data.append(rate)
 
         # 添加评价人数
         judgeAmt = re.findall(findMovieJudgeAmt, item)[0]
-        data.append(judgeAmt)
-        # databin.append(judgeAmt)
+        if judgeAmt == "":
+            judgeAmt = "no judge amount found"
+        else:
+            data.append(judgeAmt)
 
     dataList.append(data) # 将电影的信息添加到dataList中
 
@@ -186,7 +202,7 @@ findBookJudgeAmt = re.compile(r'<span property="v:votes">(\d*)</span>人评价')
 def AnalysisData_book(url):
     '''
     定义一个函数, 并解析这个网页
-    目前可以记录以下信息: [ [[书籍名称], [书籍图片地址], [作者]], [书籍外文原名(若有)], [简介], [[书籍评分], [评价人数]] ]
+    目前可以记录以下信息: [ [书籍名称], [书籍图片地址], [作者], [书籍外文原名(若有)], [简介], [[书籍评分], [评价人数]] ]
     '''
 
     # 定义一个列表以储存每一部电影的信息
@@ -194,6 +210,8 @@ def AnalysisData_book(url):
 
     # 获取指定网页
     html = web_downloader.GetHtml(url)
+    if html == None:    # 如果获取失败, 返回None
+        return None
 
     # 指定解析器解析html, 得到BeautifulSoup对象
     soup = BeautifulSoup(html, "html5lib")
@@ -209,17 +227,23 @@ def AnalysisData_book(url):
 
         # 添加书籍名称
         title = re.findall(findBookTitle, item)
-        if title != []:
+        if title == []:
+            title = "no book title found"
+        else:
             data.append(title)
 
         # 添加书籍图片链接
         img = re.findall(findBookImgSrc, item)
-        if img != []:
+        if img == []:
+            img = "no book image found"
+        else:
             data.append(img)
 
         # 添加作者信息
         arthor = re.findall(findArthor, item)
-        if arthor != []:
+        if arthor == []:
+            arthor = "no arthor found"
+        else:
             data.append(arthor)
 
     dataList.append(data) # 将书籍的信息添加到dataList中

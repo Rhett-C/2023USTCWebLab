@@ -1,5 +1,10 @@
+import csv
 import url_manager
 import web_parser
+
+
+movieSavePath = "./Data/MovieData.csv"
+bookSavePath = "./Data/BookData.csv"
 
 
 def GetWebdata(line, type):
@@ -23,9 +28,25 @@ def LineInit():
     url_manager.LineInit()
 
 
-def LineSave():
-    # TODO
-    pass
+def LineSave(line, dataList, type, writer):
+    if type == "movie":
+        # dataList-->   [ [[电影名称], [图片链接]], [简介], [导演], [演职员表], [评分, 评价人数] ]
+        # save-->       行数, 电影名称, 简介, 导演, 演职员表, 图片链接, 评分, 评价人数
+        if dataList != None and len(dataList) == 5 and len(dataList[0]) == 2 and len(dataList[4]) == 2:
+            writeData = [line] + dataList[0][0] + dataList[1] + dataList[2] + dataList[3] + dataList[0][1] + dataList[4]
+            writer.writerow(writeData)
+        else:
+            writeData = [line] + ["fetch webpage failed"]
+            writer.writerow(writeData)
+    elif type == "book":
+        # dataList-->   [ [[书籍名称], [书籍图片地址], [作者]], [书籍外文原名(若有)], [简介], [[书籍评分], [评价人数]] ]
+        # save-->       行数, 书籍名称, 书籍外文原名(若有), 作者, 简介, 书籍图片地址, 书籍评分, 评价人数
+        if dataList != None and len(dataList) == 4 and len(dataList[0]) == 3 and len(dataList[3]) == 2:
+            writeData = [line] + dataList[0][0] + dataList[1] + dataList[0][2] + dataList[2] + dataList[0][1] + dataList[3]
+            writer.writerow(writeData)
+        else:
+            writeData = [line] + ["fetch webpage failed"]
+            writer.writerow(writeData)
 
 
 def LineLoad():
@@ -42,17 +63,41 @@ def Running(startLine, runTime, type):
     runTime: 爬取多少次
     type: 爬取的类型 (电影或书籍)
     '''
-    for time in range(runTime):
-        line = startLine + time
-        dataList = GetWebdata(line, type)
+    if type == "movie":
+        with open(movieSavePath, "a", newline="", encoding='utf-8') as dataFile:
+            writer = csv.writer(dataFile)
+            for time in range(runTime):
+                line = startLine + time
+                print("Crawling: " + str(line))
 
-        print("Crawling: " + str(line))
-        print(dataList) # debug only
+                dataList = GetWebdata(line, type)
+                # print(dataList)
+                # debug only
 
-        # TODO: save dataList in the file?
-    # TODO: output the result
+                # save dataList in the file?
+                LineSave(line, dataList, type, writer)
+    
+    elif type == "book":
+        with open(bookSavePath, "a", newline="", encoding='utf-8') as dataFile:
+            writer = csv.writer(dataFile)
+            for time in range(runTime):
+                line = startLine + time
+                print("Crawling: " + str(line))
+
+                dataList = GetWebdata(line, type)
+                # print(dataList)
+                # debug only
+
+                # save dataList in the file?
+                LineSave(line, dataList, type, writer)
+
+
+def RunningAll(startLine, type):
+    Running(startLine, 1200-startLine+1, type)
+    
+
 
 if __name__ == "__main__":
     LineInit()
-    Running(1, 15, "movie")
+    RunningAll(175, "book")
 
